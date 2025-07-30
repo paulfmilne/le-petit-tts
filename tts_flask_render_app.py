@@ -1,11 +1,12 @@
-
 from flask import Flask, request, Response
+from flask_cors import CORS
 import openai
 import os
-import io
 
 app = Flask(__name__)
+CORS(app)  # 🔓 Enable CORS for all incoming requests
 
+# Load your OpenAI API key from environment
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/speak", methods=["POST"])
@@ -28,6 +29,7 @@ def speak():
             mimetype="audio/mpeg",
             headers={"Content-Disposition": "inline; filename=pronunciation.mp3"}
         )
+
     except Exception as e:
         return {"error": str(e)}, 500
 
