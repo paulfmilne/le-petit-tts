@@ -4,13 +4,18 @@ import openai
 import os
 
 app = Flask(__name__)
-CORS(app)  # 🔓 Enable CORS for all incoming requests
 
-# Load your OpenAI API key from environment
+# ✅ Allow only your Vercel frontend to access this API
+CORS(app, origins=["https://le-petit-tts.vercel.app"])
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@app.route("/speak", methods=["POST"])
+@app.route("/speak", methods=["POST", "OPTIONS"])
 def speak():
+    if request.method == "OPTIONS":
+        # ✅ Return proper CORS headers for preflight
+        return Response(status=200)
+
     data = request.get_json()
     wine_term = data.get("wine_term", "")
 
@@ -27,9 +32,10 @@ def speak():
         return Response(
             response.content,
             mimetype="audio/mpeg",
-            headers={"Content-Disposition": "inline; filename=pronunciation.mp3"}
+            headers={
+                "Content-Disposition": "inline; filename=pronunciation.mp3"
+            }
         )
-
     except Exception as e:
         return {"error": str(e)}, 500
 
